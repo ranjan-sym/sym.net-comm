@@ -7,6 +7,8 @@ import net.symplifier.comm.PortTransmitter;
 import net.symplifier.core.application.threading.ThreadTarget;
 
 import java.io.IOException;
+import java.net.InetSocketAddress;
+import java.net.SocketAddress;
 import java.nio.BufferUnderflowException;
 import java.nio.ByteBuffer;
 import java.nio.channels.SelectionKey;
@@ -107,20 +109,22 @@ public class TCPPort extends DigitalPort implements ThreadTarget<TCPManager, Obj
 
   @Override
   protected int getReceiverBufferLength() {
-    return 1024+256;
+    return 1380;    // The optimum packet size for TCP is 1380 bytes
   }
 
   @Override
   protected int getTransmitterBufferLength() {
-    return 1024+256;
+    return 1380;    // The optimum packet size for TCP is 1380 bytes
   }
 
   @Override
   public void open() {
     try {
+      SocketAddress remoteAddr = new InetSocketAddress(remoteHost, remotePort);
       socket = SocketChannel.open();
-      socket.configureBlocking(true);
+      socket.configureBlocking(false);
       TCPManager.hook(this, SelectionKey.OP_CONNECT);
+      socket.connect(remoteAddr);
     } catch (IOException e) {
       getAttachment().onPortError(this, e);
     }
@@ -147,9 +151,13 @@ public class TCPPort extends DigitalPort implements ThreadTarget<TCPManager, Obj
     waitForTransmitEvent = false;
 
     if ((interestOps & SelectionKey.OP_CONNECT) == SelectionKey.OP_CONNECT) {
-      getAttachment().onPortOpen(this);
-
-      newInterest = SelectionKey.OP_READ;
+      try {
+        this.socket.finishConnect();
+        getAttachment().onPortOpen(this);
+        newInterest = SelectionKey.OP_READ;
+      } catch(IOException e) {
+        getAttachment().onPortError(this, e);
+      }
     }
 
     if ((interestOps & SelectionKey.OP_READ) == SelectionKey.OP_READ) {

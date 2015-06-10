@@ -17,7 +17,17 @@ public abstract class DigitalPort implements Port {
 
 
   protected abstract void onPrepareReception(PortReceiver receiver);
-  protected abstract boolean finalizeReception(PortReceiver receiver);
+
+  /**
+   * This method returns true to mark the end of a session. Throws an exception
+   * if the finalization has not been completed or returns false if the read
+   * cycle has to be thrown back to the Parser
+   *
+   * @param receiver
+   * @return
+   * @throws BufferUnderflowException
+   */
+  protected abstract boolean finalizeReception(PortReceiver receiver) throws BufferUnderflowException;
 
   protected abstract boolean onPrepareTransmission(PortTransmitter transmitter);
   protected abstract void finalizeTransmission(PortTransmitter transmitter);
