@@ -1,0 +1,13 @@
+target
+*.bin
+*.class
+*.jar
+
+# Temporary files
+*~
+*.tmp
+*.save
+
+# Intellij idea specific files
+.idea
+*.iml

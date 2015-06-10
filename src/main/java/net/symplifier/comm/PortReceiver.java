@@ -1,0 +1,157 @@
+package net.symplifier.comm;
+
+import java.nio.BufferUnderflowException;
+import java.nio.ByteBuffer;
+import java.nio.charset.Charset;
+
+/**
+ * Created by ranjan on 6/10/15.
+ */
+public class PortReceiver {
+
+  final ByteBuffer buffer;
+  private final DigitalPort port;
+  private Port.Parser parser;
+
+
+  private int state = STATE_COMPLETED;
+  //private static final int STATE_NONE     = 0;
+  private static final int STATE_STARTED    = 1;
+  private static final int STATE_COMPLETING = 2;
+  private static final int STATE_COMPLETED  = 3;
+
+  public PortReceiver(DigitalPort port, int bufferSize) {
+    assert(bufferSize > 0);
+    this.port = port;
+    this.buffer = ByteBuffer.allocate(bufferSize);
+  }
+
+  public void setParser(Port.Parser parser) {
+    this.parser = parser;
+  }
+
+  public Port.Parser getParser() {
+    return parser;
+  }
+
+  public void mark() {
+    this.buffer.mark();
+  }
+
+  public void reset() {
+    this.buffer.reset();
+  }
+
+  public byte get() throws BufferUnderflowException {
+    return this.buffer.get();
+  }
+
+  private final static byte CR = 0x0D;
+  private final static byte LF = 0x0A;
+
+  private int parserLimit = -1;
+
+  /**
+   * Sets a provision to limit the number of bytes allowed to be
+   * read by the Parser, the Receiver won't allow the parser to read
+   * bytes more than the given limit
+   * @param limit
+   */
+  public void setLimit(int limit) {
+    parserLimit = limit;
+  }
+
+  public int getLimit() {
+    return parserLimit;
+  }
+
+  public String getLine(Charset charset) throws BufferUnderflowException {
+
+    this.buffer.mark();
+    int startPos = this.buffer.position();
+    int trimCR = 0;
+    try {
+      do {
+        byte b = buffer.get();
+        if (b == LF) {
+          // Got the end of the line, return the string
+          byte ar[] = this.buffer.array();
+          return new String(ar, startPos, this.buffer.position() - startPos - trimCR - 1, charset);
+        } else if (b == CR) {
+          // Ignore the CR characters
+          trimCR += 1;
+        } else {
+          // if the CR are inbetween lines, we consider that as a part of line
+          trimCR = 0;
+        }
+      } while (true);
+    } catch(BufferUnderflowException ex){
+      this.buffer.reset();
+      throw ex;
+    }
+  }
+
+  public ByteBuffer getBuffer() {
+    return this.buffer;
+  }
+
+  public void onReceive() {
+    // Set the buffer into read mode
+    buffer.flip();
+
+    do {
+      int startPos = buffer.position();
+
+      if (state == STATE_COMPLETED) {
+        try {
+          // Try to start the response timeout timer
+          port.startResponseTimeoutTimer();
+          this.mark();
+          port.onPrepareReception(this);
+          state = STATE_STARTED;
+        } catch(BufferUnderflowException ex) {
+          this.reset();
+          break;
+        }
+      }
+
+      if (state == STATE_STARTED) {
+        try {
+          this.mark();
+          if (parser != null) {
+            parser.onReceiverReady(port, this);
+          }
+          state = STATE_COMPLETING;
+        } catch(BufferUnderflowException ex) {
+          this.reset();
+          break;
+        }
+      }
+
+      if (state == STATE_COMPLETING) {
+        if (port.finalizeReception(this)) {
+          state = STATE_COMPLETED;
+          if (parser != null) {
+            parser.onReceiveComplete(port);
+          }
+
+          if (!buffer.hasRemaining()) {
+            break;
+          }
+        } else {
+          break;
+        }
+      }
+
+      if (buffer.position() == startPos) {
+        // Looks like the application is not doing anything about the data
+        // we cannot loop forever in such cases
+        // just break the loop
+        break;
+      }
+
+    } while (true);
+
+    buffer.compact();
+  }
+}
