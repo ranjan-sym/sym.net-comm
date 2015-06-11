@@ -1,5 +1,7 @@
 package net.symplifier.comm;
 
+import net.symplifier.core.util.HexDump;
+
 import java.nio.BufferOverflowException;
 import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
@@ -35,6 +37,10 @@ public class PortTransmitter {
     return responder;
   }
 
+  public ByteBuffer getBuffer() {
+    return buffer;
+  }
+
   public void mark() {
     buffer.mark();
   }
@@ -45,6 +51,26 @@ public class PortTransmitter {
 
   public void put(byte value) throws BufferOverflowException {
     buffer.put(value);
+  }
+
+  public void putShort(short value) throws BufferOverflowException {
+    buffer.putShort(value);
+  }
+
+  public void putInt(int value) throws BufferOverflowException {
+    buffer.putInt(value);
+  }
+
+  public void putFloat(float value) throws BufferOverflowException {
+    buffer.putFloat(value);
+  }
+
+  public void putDouble(double value) throws BufferOverflowException {
+    buffer.putDouble(value);
+  }
+
+  public void putLong(long value) throws BufferOverflowException {
+    buffer.putDouble(value);
   }
 
   public void putLine(String line, Charset charset) throws BufferOverflowException {
@@ -59,7 +85,12 @@ public class PortTransmitter {
   }
 
   public void putBuffer(ByteBuffer buffer) {
-    this.buffer.put(buffer);
+    if(buffer.remaining() > this.buffer.remaining()) {
+      this.buffer.put(buffer.array(), buffer.position(), this.buffer.remaining());
+      buffer.position(buffer.position() + this.buffer.remaining());
+    } else {
+      this.buffer.put(buffer);
+    }
   }
 
   public void onTransmit() {
@@ -86,6 +117,9 @@ public class PortTransmitter {
     }
 
     buffer.flip();
+
+    // Do a hex dump of transmission bytes
+    HexDump.dump(buffer.array(), buffer.position(), buffer.remaining());
 
     if (buffer.hasRemaining()) {
       port.flush();

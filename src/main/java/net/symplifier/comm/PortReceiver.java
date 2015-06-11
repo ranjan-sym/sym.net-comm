@@ -1,5 +1,7 @@
 package net.symplifier.comm;
 
+import net.symplifier.core.util.HexDump;
+
 import java.nio.Buffer;
 import java.nio.BufferUnderflowException;
 import java.nio.ByteBuffer;
@@ -50,6 +52,26 @@ public class PortReceiver {
 
   public byte get() throws BufferUnderflowException {
     return this.buffer.get();
+  }
+
+  public short getShort() throws BufferUnderflowException {
+    return this.buffer.getShort();
+  }
+
+  public float getFloat() throws BufferUnderflowException {
+    return this.buffer.getFloat();
+  }
+
+  public double getDouble() throws BufferUnderflowException {
+    return this.buffer.getDouble();
+  }
+
+  public int getInt() throws BufferUnderflowException {
+    return this.buffer.getInt();
+  }
+
+  public long getLong() throws BufferUnderflowException {
+    return this.buffer.getLong();
   }
 
   public byte[] getAll() {
@@ -122,6 +144,9 @@ public class PortReceiver {
   public void onReceive() {
     // Set the buffer into read mode
     buffer.flip();
+
+    // Debug dump
+    HexDump.dump(buffer.array(), buffer.position(), buffer.remaining());
 
     // Just check for excess data
     setLimit(parserLimit);

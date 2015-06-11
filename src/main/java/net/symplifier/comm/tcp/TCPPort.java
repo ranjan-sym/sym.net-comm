@@ -109,12 +109,12 @@ public class TCPPort extends DigitalPort implements ThreadTarget<TCPManager, Obj
 
   @Override
   protected int getReceiverBufferLength() {
-    return 1380;    // The optimum packet size for TCP is 1380 bytes
+    return 16384;    // The optimum packet size for TCP is 1380 bytes
   }
 
   @Override
   protected int getTransmitterBufferLength() {
-    return 1380;    // The optimum packet size for TCP is 1380 bytes
+    return 16384;    // The optimum packet size for TCP is 1380 bytes
   }
 
   @Override
