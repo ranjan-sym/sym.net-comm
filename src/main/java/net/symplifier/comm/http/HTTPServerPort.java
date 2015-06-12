@@ -74,7 +74,7 @@ public class HTTPServerPort extends TCPPort {
           error("Unrecognized verb " + parts[0]);
           return;
         } else {
-          request.path = (parts[1]);
+          request.setRequestURI(parts[1]);
           request.version = (parts[2]);
           state = receiver.markState(STATE_HEADER);
         }

@@ -57,7 +57,7 @@ public class HTTP extends TCP {
   }
 
   public Port.Responder getResponder(HTTPServerPort port, HTTPRequest request, HTTPResponse response) {
-    String parts[] = request.path.split("/");
+    String parts[] = request.getPath().split("/");
 
     RequestHandlerMap r = requestHandlers;
     HTTPRequest.Handler requestHandler = r.requestHandler;
