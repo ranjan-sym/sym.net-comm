@@ -75,17 +75,16 @@ public class SerialPort extends DigitalPort implements SerialPortEventListener {
     } catch(SerialPortException ex) {
       getAttachment().onPortError(SerialPort.this, ex);
     }
-
   }
 
   @Override
   protected int getReceiverBufferLength() {
-    return 0;
+    return 512;
   }
 
   @Override
   protected int getTransmitterBufferLength() {
-    return 0;
+    return 512;
   }
 
   private final jssc.SerialPort port;
