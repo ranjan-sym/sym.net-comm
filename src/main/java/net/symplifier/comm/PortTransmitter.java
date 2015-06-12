@@ -12,6 +12,7 @@ import java.nio.charset.Charset;
 public class PortTransmitter {
 
   final ByteBuffer buffer;
+  private int localMark;
   private final DigitalPort port;
   private Port.Responder responder;
 
@@ -42,15 +43,19 @@ public class PortTransmitter {
   }
 
   public void mark() {
-    buffer.mark();
+    this.localMark = this.buffer.position();
   }
 
   public void reset() {
-    buffer.reset();
+    buffer.position(this.localMark);
   }
 
   public void put(byte value) throws BufferOverflowException {
     buffer.put(value);
+  }
+
+  public void put(byte[] data) throws BufferOverflowException {
+    buffer.put(data);
   }
 
   public void putShort(short value) throws BufferOverflowException {

@@ -13,6 +13,7 @@ import java.nio.charset.Charset;
 public class PortReceiver {
 
   final ByteBuffer buffer;
+  private int localMark = -1;
   private final DigitalPort port;
   private Port.Parser parser;
 
@@ -24,7 +25,7 @@ public class PortReceiver {
   private static final int STATE_COMPLETED  = 3;
 
   public PortReceiver(DigitalPort port, int bufferSize) {
-    assert(bufferSize > 0);
+    assert(bufferSize > 0):"Check the value of the buffer size set by the getReceiveBufferLength in the DigitalPort implementation";
     this.port = port;
     this.buffer = ByteBuffer.allocate(bufferSize);
   }
@@ -43,11 +44,17 @@ public class PortReceiver {
   }
 
   public void mark() {
-    this.buffer.mark();
+    this.localMark = this.buffer.position();
   }
 
   public void reset() {
-    this.buffer.reset();
+    if (this.localMark != -1) {
+      this.buffer.position(this.localMark);
+    }
+  }
+
+  public void flush() {
+
   }
 
   public byte get() throws BufferUnderflowException {
@@ -144,7 +151,7 @@ public class PortReceiver {
   public void onReceive() {
     // Set the buffer into read mode
     buffer.flip();
-
+    System.out.println("Buffer has " + buffer.remaining() + " bytes of data ready to process");
     // Debug dump
     HexDump.dump(buffer.array(), buffer.position(), buffer.remaining());
 
@@ -225,13 +232,15 @@ public class PortReceiver {
         break;
       }
 
-    } while (true);
+    } while (buffer.remaining() > 0);
 
     buffer.compact();
   }
 
   public void purge() {
+    // Check which mode is the buffer and empty it accordingly
     buffer.clear();
+    //buffer.limit(0);
     excessData = null;
     parserLimit = -1;
     state = STATE_COMPLETED;
