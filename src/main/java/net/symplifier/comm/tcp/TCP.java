@@ -52,6 +52,7 @@ public class TCP extends ServerPort implements ThreadTarget<TCPManager, Object> 
 
       System.out.println("Listening on - " + address.toString());
     } catch(IOException e) {
+      System.out.println("Port already used - " + address.toString());
       return false;
     }
 
@@ -64,12 +65,12 @@ public class TCP extends ServerPort implements ThreadTarget<TCPManager, Object> 
   public void stop() {
 
     // TODO close all the child ports
-    TCPManager.unhook(this);
     try {
       serverSocket.close();
     } catch(IOException e) {
 
     }
+    TCPManager.unhook(this);
     serverSocket = null;
   }
 

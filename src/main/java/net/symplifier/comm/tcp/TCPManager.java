@@ -54,14 +54,20 @@ class TCPManager implements Runnable {
     if (key == null) {
       try {
         // The selector needs to be woken up before registering a new key
-        selector.wakeup();
+        // selector.wakeup();
 
+        System.out.println("Need to register a fresh new hook");
         // Register the new key
-        key = channel.register(selector, interestOps);
+        synchronized (this) {
+          selector.wakeup();
+          key = channel.register(selector, interestOps);
+          System.out.println("New Key registered");
 
-        // Attach the player into the key for extraction later
-        key.attach(owner);
+          // Attach the player into the key for extraction later
+          key.attach(owner);
+        }
       } catch(ClosedChannelException ex) {
+        ex.printStackTrace();
         // No need to do anything
       } catch(IllegalBlockingModeException ex) {
         System.err.println("Only non blocking type sockets are allowed");
@@ -135,8 +141,10 @@ class TCPManager implements Runnable {
       System.out.println("Something is available - number of readyChannels = " + readyChannels);
 
       if (readyChannels == 0) {
-        // might be an exit event or the new selection event has been added
-        continue;
+        // might be an exit event or the new selection event has been
+        synchronized (this) {
+          continue;
+        }
       }
 
       Iterator<SelectionKey> keyIterator = selector.selectedKeys().iterator();
