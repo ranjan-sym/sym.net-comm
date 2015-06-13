@@ -15,7 +15,7 @@ public class HTTPRequest {
   }
 
   String method;
-  private String requestURI;
+  //private String requestURI;
   private String path;
 
   String basePath;
@@ -48,13 +48,21 @@ public class HTTPRequest {
     }
   }
 
+  public long getQuery(String name, long defaultValue) {
+    if (queries.containsKey(name)) {
+      return Long.parseLong(queries.get(name));
+    } else {
+      return defaultValue;
+    }
+  }
+
   private String decodeURI(String raw) {
     StringBuilder res = new StringBuilder();
 
     boolean expectingHex = false;
     String hexNum = "";
-    for(int i=0; i<requestURI.length(); ++i) {
-      char ch = requestURI.charAt(i);
+    for(int i=0; i<raw.length(); ++i) {
+      char ch = raw.charAt(i);
       if (expectingHex) {
         if ((ch >= '0' && ch <='9') ||
                 (ch>='A' && ch <='F') ||

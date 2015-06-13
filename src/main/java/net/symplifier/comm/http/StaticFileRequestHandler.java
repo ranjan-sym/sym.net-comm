@@ -41,6 +41,10 @@ public class StaticFileRequestHandler implements HTTPRequest.Handler {
         contentType = "text/html";
       } else if(filename.endsWith(".jpg") || filename.endsWith(".png") || filename.endsWith(".gif")) {
         contentType = "text/image";
+      } else if(filename.endsWith(".css")) {
+        contentType = "text/css";
+      } else if(filename.endsWith(".js")) {
+        contentType = "application/javascript";
       }
       response.setHeader("Content-Type", contentType);
       response.setContentLength(f.length());

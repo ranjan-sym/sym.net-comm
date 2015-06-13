@@ -50,6 +50,12 @@ public class TCPManager implements Runnable {
   }
 
   private void hook(Object owner, SelectableChannel channel, int interestOps) {
+    if (channel == null) {
+      // TODO: Looks like we are getting this null value here because a channel is closed
+      // For simulation use netcat (nc) to send data to a modbus server
+      return;
+    }
+
     SelectionKey key = channel.keyFor(selector);
     if (key == null) {
       try {

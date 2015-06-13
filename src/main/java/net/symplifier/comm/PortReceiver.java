@@ -240,7 +240,7 @@ public class PortReceiver {
   public void purge() {
     // Check which mode is the buffer and empty it accordingly
     buffer.clear();
-    //buffer.limit(0);
+    buffer.limit(0);
     excessData = null;
     parserLimit = -1;
     state = STATE_COMPLETED;
