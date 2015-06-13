@@ -34,6 +34,15 @@ public class StaticFileRequestHandler implements HTTPRequest.Handler {
       f = new File(f, defaultFile);
     }
     if (f.isFile()) {
+      // Detect the content type and respond accordingly
+      String filename = f.getName();
+      String contentType = "text/html";
+      if (filename.endsWith(".html") || filename.endsWith(".htm")) {
+        contentType = "text/html";
+      } else if(filename.endsWith(".jpg") || filename.endsWith(".png") || filename.endsWith(".gif")) {
+        contentType = "text/image";
+      }
+      response.setHeader("Content-Type", contentType);
       response.setContentLength(f.length());
       return new FileResponder(f);
     } else {
