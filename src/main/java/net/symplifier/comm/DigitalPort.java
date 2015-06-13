@@ -129,4 +129,9 @@ public abstract class DigitalPort implements Port {
   public abstract void open();
 
   public abstract void close();
+
+  @Override
+  public String toString() {
+    return name;
+  }
 }
