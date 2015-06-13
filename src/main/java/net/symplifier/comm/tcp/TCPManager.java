@@ -10,7 +10,7 @@ import java.util.Set;
 /**
  * Created by ranjan on 6/10/15.
  */
-class TCPManager implements Runnable {
+public class TCPManager implements Runnable {
   private final static TCPManager manager;
 
 
@@ -181,6 +181,9 @@ class TCPManager implements Runnable {
 
     selector = null;
     running = false;
+
+    pool.stop();
+    System.out.println("TCP Manager is quitting");
 
   }
 }
