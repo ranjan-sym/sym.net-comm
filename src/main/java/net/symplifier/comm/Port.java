@@ -17,14 +17,19 @@ public interface Port {
     T create(String name);
   }
 
-  interface Responder {
+  interface Poller {
     boolean onTransmitterReady(DigitalPort port, PortTransmitter transmitter);
+  }
+
+  interface Responder extends Poller {
     void onTransmissionComplete(DigitalPort port);
   }
 
   interface Parser {
     void onReceiverReady(DigitalPort port, PortReceiver receiver) throws BufferUnderflowException;
     void onReceiveComplete(DigitalPort port);
+
+    void onResponseTimeout(DigitalPort port);
   }
 
   interface Attachment {

@@ -1,5 +1,8 @@
 package net.symplifier.comm;
 
+import net.symplifier.core.application.scheduler.Schedule;
+import net.symplifier.core.application.scheduler.ScheduledTask;
+import net.symplifier.core.application.scheduler.Scheduler;
 import net.symplifier.core.util.HexDump;
 
 import java.nio.Buffer;
@@ -10,7 +13,7 @@ import java.nio.charset.Charset;
 /**
  * Created by ranjan on 6/10/15.
  */
-public class PortReceiver {
+public class PortReceiver implements ScheduledTask {
 
   final ByteBuffer buffer;
   private int localMark = -1;
@@ -148,7 +151,7 @@ public class PortReceiver {
     return this.buffer;
   }
 
-  public void onReceive() {
+  public synchronized void onReceive() {
     // Set the buffer into read mode
     buffer.flip();
     System.out.println("Buffer has " + buffer.remaining() + " bytes of data ready to process");
@@ -164,7 +167,10 @@ public class PortReceiver {
       if (state == STATE_COMPLETED) {
         try {
           // Try to start the response timeout timer
-          port.startResponseTimeoutTimer();
+          if (!port.isPolling()) {
+            port.startResponseTimeoutTimer();
+          }
+
           this.mark();
           port.onPrepareReception(this);
           state = STATE_STARTED;
@@ -205,6 +211,8 @@ public class PortReceiver {
       }
 
       if (state == STATE_COMPLETING) {
+        // We got the response, no need for the response timeout timer
+        port.cancelResponseTimeoutTimer();
         try {
           mark();
           if (port.finalizeReception(this)) {
@@ -244,5 +252,14 @@ public class PortReceiver {
     excessData = null;
     parserLimit = -1;
     state = STATE_COMPLETED;
+  }
+
+  @Override
+  public synchronized void onRun(Scheduler scheduler, Schedule schedule) {
+    // Response Timed out
+    purge();
+    if (parser != null) {
+      parser.onResponseTimeout(port);
+    }
   }
 }

@@ -1,5 +1,8 @@
 package net.symplifier.comm;
 
+import net.symplifier.core.application.scheduler.Schedule;
+import net.symplifier.core.application.scheduler.ScheduledTask;
+import net.symplifier.core.application.scheduler.Scheduler;
 import net.symplifier.core.util.HexDump;
 
 import java.nio.BufferOverflowException;
@@ -9,7 +12,7 @@ import java.nio.charset.Charset;
 /**
  * Created by ranjan on 6/10/15.
  */
-public class PortTransmitter {
+public class PortTransmitter implements ScheduledTask {
 
   final ByteBuffer buffer;
   private int localMark;
@@ -119,6 +122,11 @@ public class PortTransmitter {
       if (responder != null) {
         responder.onTransmissionComplete(port);
       }
+
+      // if the port is on the poll mode, start the response timeout timer
+      if (port.isPolling()) {
+        port.startResponseTimeoutTimer();
+      }
     }
 
     buffer.flip();
@@ -130,5 +138,11 @@ public class PortTransmitter {
       port.flush();
     }
 
+  }
+
+  @Override
+  public void onRun(Scheduler scheduler, Schedule schedule) {
+    // Got a poll event
+    onTransmit();
   }
 }

@@ -1,9 +1,12 @@
 package net.symplifier.comm;
 
-import java.nio.BufferOverflowException;
+import net.symplifier.core.application.scheduler.Schedule;
+import net.symplifier.core.application.scheduler.ScheduledTask;
+import net.symplifier.core.application.scheduler.Scheduler;
+import net.symplifier.core.application.scheduler.Timer;
+
 import java.nio.BufferUnderflowException;
 import java.nio.ByteBuffer;
-import java.nio.charset.Charset;
 
 /**
  * A Transport Layer responsible for duplex data communication
@@ -14,7 +17,9 @@ public abstract class DigitalPort implements Port {
 
   private int responseTimeoutInterval = -1;
   private boolean responseTimeoutRunning = false;
-
+  private Timer pollTimer;
+  private Timer responseTimeoutTimer;
+  private boolean isPolling = false;
 
   protected abstract void onPrepareReception(PortReceiver receiver);
 
@@ -42,8 +47,6 @@ public abstract class DigitalPort implements Port {
   protected final PortReceiver    receiver = new PortReceiver(this, getReceiverBufferLength());
   protected final PortTransmitter transmitter = new PortTransmitter(this, getTransmitterBufferLength());
 
-
-
   private Attachment attachment;
 
   public String getName() {
@@ -56,19 +59,32 @@ public abstract class DigitalPort implements Port {
   }
 
 
+  void cancelResponseTimeoutTimer() {
+    if (responseTimeoutTimer != null) {
+      responseTimeoutTimer.cancel();
+    }
+  }
 
-  public void startResponseTimeoutTimer() {
+  void startResponseTimeoutTimer() {
     if (responseTimeoutInterval > 0) {
       if (responseTimeoutRunning) {
         return;
       } else {
         responseTimeoutRunning = true;
+        if (responseTimeoutTimer != null) {
+          responseTimeoutTimer.start(responseTimeoutInterval);
+        }
       }
     }
   }
 
   public void setResponseTimeoutInterval(int responseTimeoutInterval) {
     this.responseTimeoutInterval = responseTimeoutInterval;
+    responseTimeoutTimer = new Timer(receiver);
+  }
+
+  public boolean isPolling() {
+    return isPolling;
   }
 
   public DigitalPort(Port.Owner owner, String name) {
@@ -117,6 +133,23 @@ public abstract class DigitalPort implements Port {
     transmitter.setResponder(responder);
     transmitter.onTransmit();
   }
+
+  public void startPoll(Responder responder, int pollInterval, int responseTimeout) {
+    transmitter.setResponder(responder);
+    if (pollTimer == null) {
+      pollTimer = new Timer(transmitter);
+    }
+
+    isPolling = true;
+    setResponseTimeoutInterval(responseTimeout);
+    pollTimer.start(100, pollInterval);
+  }
+
+  public void cancelPoll() {
+    isPolling = false;
+    pollTimer.cancel();
+  }
+
 
   protected ByteBuffer getTransmitterBuffer() {
     return transmitter.buffer;
