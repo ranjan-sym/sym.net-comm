@@ -100,16 +100,16 @@ public class HTTP extends TCP {
   }
 
 
-  public HTTP(Owner owner, String name) throws InvalidPortNameException {
-    super(owner, name);
+  public HTTP(String name) throws InvalidPortNameException {
+    super(name);
   }
 
-  public HTTP(Owner owner, String host, int port) throws InvalidPortNameException {
-    super(owner, host, port);
+  public HTTP(String host, int port) throws InvalidPortNameException {
+    super(host, port);
   }
 
-  public HTTP(Owner owner, int port) throws InvalidPortNameException {
-    super(owner, port);
+  public HTTP(int port) throws InvalidPortNameException {
+    super(port);
   }
 
   public TCPPort createPort(SocketChannel socketChannel) {

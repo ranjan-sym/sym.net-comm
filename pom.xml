@@ -6,7 +6,7 @@
 
   <groupId>net.symplifier.libs</groupId>
   <artifactId>sym.net-comm</artifactId>
-  <version>1.0.1</version>
+  <version>1.0.2-SNAPSHOT</version>
 
   <build>
     <plugins>
@@ -39,7 +39,7 @@
     <dependency>
       <groupId>net.symplifier.libs</groupId>
       <artifactId>sym.net-core</artifactId>
-      <version>1.0.1</version>
+      <version>1.0.2-SNAPSHOT</version>
     </dependency>
 
 

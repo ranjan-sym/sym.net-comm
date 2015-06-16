@@ -27,8 +27,8 @@ public class TCP extends ServerPort implements ThreadTarget<TCPManager, Object> 
   ServerSocketChannel serverSocket;
   private volatile boolean exit = false;
 
-  public TCP(Owner owner, String name) throws InvalidPortNameException {
-    super(owner, name);
+  public TCP(String name) throws InvalidPortNameException {
+    super(name);
     validate(name.split(":"));
   }
 
@@ -58,13 +58,13 @@ public class TCP extends ServerPort implements ThreadTarget<TCPManager, Object> 
     this.port = port;
   }
 
-  public TCP(Owner owner, int port) throws InvalidPortNameException {
-    this(owner, "0.0.0.0", port);
+  public TCP(int port) throws InvalidPortNameException {
+    this("0.0.0.0", port);
 
   }
 
-  public TCP(Owner owner, String bindAddress, int port) throws InvalidPortNameException {
-    super(owner, bindAddress + ":" + port);
+  public TCP(String bindAddress, int port) throws InvalidPortNameException {
+    super(bindAddress + ":" + port);
     validate(bindAddress, port);
   }
 
