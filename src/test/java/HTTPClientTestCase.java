@@ -33,6 +33,11 @@ public class HTTPClientTestCase implements Port.Attachment {
       total = 0;
       System.out.println("Total time take = " + (System.currentTimeMillis() - startTime) + " ms");
     }
+
+    @Override
+    public void onResponseTimeout(DigitalPort port) {
+      System.out.println("Response timed out on " + port);
+    }
   };
 
   @Test

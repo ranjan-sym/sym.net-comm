@@ -38,18 +38,18 @@ public class TCPPort extends DigitalPort implements ThreadTarget<TCPManager, Obj
 
       remoteHost = parts[0].trim();
       if (remoteHost.isEmpty()) {
-        throw new InvalidPortNameException();
+        throw new InvalidPortNameException(this, name);
       }
       try {
         remotePort = Integer.parseInt(parts[1]);
         if (remotePort <=0 || remotePort > 65535) {
-          throw new InvalidPortNameException();
+          throw new InvalidPortNameException(this, name);
         }
       } catch(NumberFormatException ex) {
-        throw new InvalidPortNameException();
+        throw new InvalidPortNameException(this, name);
       }
     } else {
-      throw new InvalidPortNameException();
+      throw new InvalidPortNameException(this, name);
     }
 
   }
@@ -143,6 +143,15 @@ public class TCPPort extends DigitalPort implements ThreadTarget<TCPManager, Obj
     getAttachment().onPortClose(this);
   }
 
+  /**
+   * The worker thread for the TCPPort operation
+   *
+   * @param source The TCPManager responsible for managing all the TCP sessions
+   * @param attachment The attachment is provides the interestOps code namely
+   *                   - SelectionKey.OP_CONNECT
+   *                   - SelectionKey.OP_READ
+   *                   - SelectionKey.OP_WRITE
+   */
   @Override
   public void onRun(TCPManager source, Object attachment) {
     Integer interestOps = (Integer)attachment;

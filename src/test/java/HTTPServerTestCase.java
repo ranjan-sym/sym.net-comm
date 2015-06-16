@@ -1,4 +1,5 @@
 import net.symplifier.comm.DigitalPort;
+import net.symplifier.comm.InvalidPortNameException;
 import net.symplifier.comm.Port;
 import net.symplifier.comm.http.HTTP;
 import net.symplifier.comm.http.StaticFileRequestHandler;
@@ -12,7 +13,7 @@ import java.io.File;
 public class HTTPServerTestCase implements Port.Attachment {
 
   @Test
-  public void testHTTPServer() throws InterruptedException {
+  public void testHTTPServer() throws InterruptedException, InvalidPortNameException {
     HTTP server = new HTTP(null, 8008);
     server.attach(this);
     server.start();

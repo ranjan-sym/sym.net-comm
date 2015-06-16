@@ -1,5 +1,6 @@
 package net.symplifier.comm.http;
 
+import net.symplifier.comm.InvalidPortNameException;
 import net.symplifier.comm.Port;
 import net.symplifier.comm.tcp.TCP;
 import net.symplifier.comm.tcp.TCPPort;
@@ -95,15 +96,15 @@ public class HTTP extends TCP {
   }
 
 
-  public HTTP(Owner owner, String name) {
+  public HTTP(Owner owner, String name) throws InvalidPortNameException {
     super(owner, name);
   }
 
-  public HTTP(Owner owner, String host, int port) {
+  public HTTP(Owner owner, String host, int port) throws InvalidPortNameException {
     super(owner, host, port);
   }
 
-  public HTTP(Owner owner, int port) {
+  public HTTP(Owner owner, int port) throws InvalidPortNameException {
     super(owner, port);
   }
 

@@ -57,7 +57,8 @@ public class PortReceiver implements ScheduledTask {
   }
 
   public void flush() {
-
+    this.buffer.position(this.buffer.limit());
+    this.buffer.mark();
   }
 
   public byte get() throws BufferUnderflowException {
@@ -156,7 +157,9 @@ public class PortReceiver implements ScheduledTask {
     buffer.flip();
     System.out.println("Buffer has " + buffer.remaining() + " bytes of data ready to process");
     // Debug dump
-    HexDump.dump(buffer.array(), buffer.position(), buffer.remaining());
+    if (buffer.remaining() < 512) {
+      HexDump.dump(buffer.array(), buffer.position(), buffer.remaining());
+    }
 
     // Just check for excess data
     setLimit(parserLimit);
@@ -248,7 +251,7 @@ public class PortReceiver implements ScheduledTask {
   public void purge() {
     // Check which mode is the buffer and empty it accordingly
     buffer.clear();
-    buffer.limit(0);
+
     excessData = null;
     parserLimit = -1;
     state = STATE_COMPLETED;
@@ -257,6 +260,8 @@ public class PortReceiver implements ScheduledTask {
   @Override
   public synchronized void onRun(Scheduler scheduler, Schedule schedule) {
     // Response Timed out
+    port.cancelResponseTimeoutTimer();
+
     purge();
     if (parser != null) {
       parser.onResponseTimeout(port);

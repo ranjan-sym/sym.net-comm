@@ -1,7 +1,4 @@
-import net.symplifier.comm.DigitalPort;
-import net.symplifier.comm.Port;
-import net.symplifier.comm.PortReceiver;
-import net.symplifier.comm.PortTransmitter;
+import net.symplifier.comm.*;
 import net.symplifier.comm.tcp.TCP;
 import org.junit.Test;
 
@@ -42,10 +39,15 @@ public class TCPTestCase implements Port.Owner, Port.Attachment {
     public void onReceiveComplete(DigitalPort port) {
       port.startTransmission(responder);
     }
+
+    @Override
+    public void onResponseTimeout(DigitalPort port) {
+      System.out.println("Response timed out on " + port.toString());
+    }
   };
 
   @Test
-  public void testServer() throws InterruptedException {
+  public void testServer() throws InterruptedException, InvalidPortNameException {
     TCP tcp = new TCP(this, 9009);
     tcp.attach(this);
     tcp.start();

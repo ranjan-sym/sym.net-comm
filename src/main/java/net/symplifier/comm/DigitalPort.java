@@ -9,7 +9,7 @@ import java.nio.BufferUnderflowException;
 import java.nio.ByteBuffer;
 
 /**
- * A Transport Layer responsible for duplex data communication
+ * A Digital Transport Layer responsible for duplex data communication
  *
  * Created by ranjan on 6/9/15.
  */
@@ -21,7 +21,35 @@ public abstract class DigitalPort implements Port {
   private Timer responseTimeoutTimer;
   private boolean isPolling = false;
 
-  protected abstract void onPrepareReception(PortReceiver receiver);
+  /**
+   * Allows the DigitalPort to open based on its name. This method only
+   * initiates the port opening process and may not guarantee that the port
+   * is opened. An event is thrown on {@link net.symplifier.comm.Port.Attachment#onPortOpen(DigitalPort)}
+   * once and when the port is opened and ready for operation. If an error
+   * occurs during the port operation process, the event is thrown via
+   * {@link net.symplifier.comm.Port.Attachment#onPortError(DigitalPort, Throwable)}.
+   *
+   * If the port is already open, the method doesn't do anything.
+   *
+   */
+  public abstract void open();
+
+  /**
+   * Closes an open connection. An event is thrown on
+   * {@link net.symplifier.comm.Port.Attachment#onPortClose(DigitalPort)}  }
+   */
+  public abstract void close();
+
+  /**
+   * Let the port implementation consume the data received on the port before
+   * the application. The port should use this method to consume any headers
+   * recognized by the port
+   *
+   * @param receiver The Receiver to use for reading in the data
+   *
+   * @throws BufferUnderflowException
+   */
+  protected abstract void onPrepareReception(PortReceiver receiver) throws BufferUnderflowException;
 
   /**
    * This method returns true to mark the end of a session. Throws an exception
@@ -36,6 +64,8 @@ public abstract class DigitalPort implements Port {
 
   protected abstract boolean onPrepareTransmission(PortTransmitter transmitter);
   protected abstract void finalizeTransmission(PortTransmitter transmitter);
+
+
   protected abstract void flush();
 
   protected abstract int getReceiverBufferLength();
@@ -62,6 +92,7 @@ public abstract class DigitalPort implements Port {
   void cancelResponseTimeoutTimer() {
     if (responseTimeoutTimer != null) {
       responseTimeoutTimer.cancel();
+      responseTimeoutRunning = false;
     }
   }
 
@@ -131,7 +162,7 @@ public abstract class DigitalPort implements Port {
 
   public void startTransmission(Responder responder) {
     transmitter.setResponder(responder);
-    transmitter.onTransmit();
+    transmitter.start();
   }
 
   public void startPoll(Responder responder, int pollInterval, int responseTimeout) {
@@ -159,9 +190,6 @@ public abstract class DigitalPort implements Port {
     return receiver.buffer;
   }
 
-  public abstract void open();
-
-  public abstract void close();
 
   @Override
   public String toString() {

@@ -20,6 +20,7 @@ public class PortTransmitter implements ScheduledTask {
   private Port.Responder responder;
 
   private int state = STATE_COMPLETED;
+  public static final int STATE_START = 0;
   public static final int STATE_STARTED = 1;
   public static final int STATE_COMPLETING = 2;
   public static final int STATE_COMPLETED = 3;
@@ -101,10 +102,28 @@ public class PortTransmitter implements ScheduledTask {
     }
   }
 
+  public void start() {
+    this.state = STATE_START;
+    onTransmit();
+  }
+
   public void onTransmit() {
+
+    if (state == STATE_COMPLETING && !buffer.hasRemaining()) {
+      state = STATE_COMPLETED;
+      if (responder != null) {
+        responder.onTransmissionComplete(port);
+      }
+
+      // if the port is on the poll mode, start the response timeout timer
+      if (port.isPolling()) {
+        port.startResponseTimeoutTimer();
+      }
+    }
+
     buffer.compact();
 
-    if (state == STATE_COMPLETED) {
+    if (state == STATE_START) {
       if(port.onPrepareTransmission(this)) {
         state = STATE_STARTED;
       }
@@ -117,32 +136,27 @@ public class PortTransmitter implements ScheduledTask {
       }
     }
 
-    if (state == STATE_COMPLETING && buffer.position()==0) {
-      state = STATE_COMPLETED;
-      if (responder != null) {
-        responder.onTransmissionComplete(port);
-      }
-
-      // if the port is on the poll mode, start the response timeout timer
-      if (port.isPolling()) {
-        port.startResponseTimeoutTimer();
-      }
-    }
-
     buffer.flip();
 
-    // Do a hex dump of transmission bytes
-    HexDump.dump(buffer.array(), buffer.position(), buffer.remaining());
-
     if (buffer.hasRemaining()) {
+      // Do a hex dump of transmission bytes
+      if (buffer.remaining() < 512) {
+        HexDump.dump(buffer.array(), buffer.position(), buffer.remaining());
+      }
+      System.out.println("Try to Transmit - " + buffer.remaining() + " bytes of data");
       port.flush();
+      System.out.println("Transmit remain - " + buffer.remaining() + " bytes of data");
     }
+
+    // Do a hex dump of transmission bytes
+    //HexDump.dump(buffer.array(), buffer.position(), buffer.remaining());
+
 
   }
 
   @Override
   public void onRun(Scheduler scheduler, Schedule schedule) {
     // Got a poll event
-    onTransmit();
+    start();
   }
 }

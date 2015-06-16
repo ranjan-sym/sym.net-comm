@@ -1,5 +1,8 @@
 package net.symplifier.comm;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import java.nio.BufferUnderflowException;
 import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
@@ -8,6 +11,7 @@ import java.nio.charset.Charset;
  * Created by ranjan on 6/9/15.
  */
 public interface Port {
+  Logger LOGGER = LogManager.getLogger("Communication");
 
   interface Owner {
 

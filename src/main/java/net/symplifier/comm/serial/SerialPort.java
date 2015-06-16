@@ -126,6 +126,9 @@ public class SerialPort extends DigitalPort implements SerialPortEventListener {
   public void open() {
     try {
       port.openPort();
+      port.purgePort(jssc.SerialPort.PURGE_TXCLEAR);
+      port.purgePort(jssc.SerialPort.PURGE_RXCLEAR);
+
       port.setParams(baudRate, dataBits, stopBits, parity);
       port.addEventListener(this, SerialPortEvent.RXCHAR);
 
