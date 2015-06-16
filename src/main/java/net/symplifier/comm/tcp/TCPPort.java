@@ -30,8 +30,8 @@ public class TCPPort extends DigitalPort implements ThreadTarget<TCPManager, Obj
     return remoteHost;
   }
 
-  public TCPPort(Owner owner, String name) throws InvalidPortNameException {
-    super(owner, name);
+  public TCPPort(String name) throws InvalidPortNameException {
+    super(name);
 
     if(name.indexOf(':') > 0) {
       String parts[] = name.split(":", 2);
@@ -54,8 +54,8 @@ public class TCPPort extends DigitalPort implements ThreadTarget<TCPManager, Obj
 
   }
 
-  public TCPPort(Owner owner, String host, int port) throws InvalidPortNameException {
-    this(owner, host + ":" + port);
+  public TCPPort(String host, int port) throws InvalidPortNameException {
+    this(host + ":" + port);
   }
 
   private static String extractName(SocketChannel channel) {
@@ -67,7 +67,7 @@ public class TCPPort extends DigitalPort implements ThreadTarget<TCPManager, Obj
   }
 
   protected TCPPort(TCP server, SocketChannel socket) {
-    super(server.getOwner(), extractName(socket));
+    super(extractName(socket));
     this.socket = socket;
     try {
       this.socket.configureBlocking(false);

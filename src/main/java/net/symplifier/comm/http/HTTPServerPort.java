@@ -11,6 +11,8 @@ import java.nio.charset.Charset;
 import java.util.Map;
 
 /**
+ * One HTTPServerPort is created for each HTTPRequest
+ *
  * Created by ranjan on 6/10/15.
  */
 public class HTTPServerPort extends TCPPort {

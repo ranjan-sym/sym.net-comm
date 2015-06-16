@@ -155,11 +155,6 @@ public class PortReceiver implements ScheduledTask {
   public synchronized void onReceive() {
     // Set the buffer into read mode
     buffer.flip();
-    System.out.println("Buffer has " + buffer.remaining() + " bytes of data ready to process");
-    // Debug dump
-    if (buffer.remaining() < 512) {
-      HexDump.dump(buffer.array(), buffer.position(), buffer.remaining());
-    }
 
     // Just check for excess data
     setLimit(parserLimit);

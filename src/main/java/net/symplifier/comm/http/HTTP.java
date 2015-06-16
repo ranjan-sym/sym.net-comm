@@ -4,6 +4,8 @@ import net.symplifier.comm.InvalidPortNameException;
 import net.symplifier.comm.Port;
 import net.symplifier.comm.tcp.TCP;
 import net.symplifier.comm.tcp.TCPPort;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.omg.CORBA.Request;
 
 import java.nio.channels.SocketChannel;
@@ -16,6 +18,8 @@ import java.util.TreeMap;
  * Created by ranjan on 6/10/15.
  */
 public class HTTP extends TCP {
+  public static final Logger LOGGER = LogManager.getLogger("HTTP");
+
   public static final String METHOD_GET = "GET";
   public static final String METHOD_POST = "POST";
   public static final String METHOD_PUT = "PUT";

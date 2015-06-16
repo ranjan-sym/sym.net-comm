@@ -99,8 +99,8 @@ public class SerialPort extends DigitalPort implements SerialPortEventListener {
   private final jssc.SerialPort port;
 
 
-  public SerialPort(Owner owner, String name) {
-    super(owner, name);
+  public SerialPort(String name) {
+    super(name);
 
     port = new jssc.SerialPort(name);
   }

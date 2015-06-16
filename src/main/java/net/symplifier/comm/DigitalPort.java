@@ -72,7 +72,6 @@ public abstract class DigitalPort implements Port {
   protected abstract int getTransmitterBufferLength();
 
   private final String      name;
-  private final Port.Owner  owner;
 
   protected final PortReceiver    receiver = new PortReceiver(this, getReceiverBufferLength());
   protected final PortTransmitter transmitter = new PortTransmitter(this, getTransmitterBufferLength());
@@ -118,13 +117,8 @@ public abstract class DigitalPort implements Port {
     return isPolling;
   }
 
-  public DigitalPort(Port.Owner owner, String name) {
-    this.owner = owner;
+  public DigitalPort(String name) {
     this.name = name;
-  }
-
-  public Port.Owner getOwner() {
-    return owner;
   }
 
   public Attachment getAttachment() {
