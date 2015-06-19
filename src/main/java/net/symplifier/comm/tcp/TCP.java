@@ -11,6 +11,7 @@ import java.net.SocketAddress;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -90,7 +91,11 @@ public class TCP extends ServerPort implements ThreadTarget<TCPManager, Object> 
 
   public void stop() {
 
-    // TODO close all the child ports
+    for(TCPPort port:children) {
+      port.close();
+    }
+    children.clear();
+
     try {
       serverSocket.close();
     } catch(IOException e) {
