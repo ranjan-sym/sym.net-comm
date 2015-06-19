@@ -9,7 +9,7 @@ import java.nio.charset.Charset;
 /**
  * Created by ranjan on 6/10/15.
  */
-public class TCPTestCase implements Port.Owner, Port.Attachment {
+public class TCPTestCase implements Port.Attachment {
 
   private String rx;
 
@@ -48,7 +48,7 @@ public class TCPTestCase implements Port.Owner, Port.Attachment {
 
   @Test
   public void testServer() throws InterruptedException, InvalidPortNameException {
-    TCP tcp = new TCP(this, 9009);
+    TCP tcp = new TCP(9009);
     tcp.attach(this);
     tcp.start();
 

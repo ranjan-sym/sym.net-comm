@@ -9,11 +9,11 @@ import java.nio.charset.Charset;
 /**
  * Created by ranjan on 6/12/15.
  */
-public class SerialPortTestApp implements Port.Owner, Port.Attachment {
+public class SerialPortTestApp implements Port.Attachment {
 
   @Test
   public void testSerialPort() throws InterruptedException {
-    SerialPort port = new SerialPort(this, "/dev/ttyUSB0");
+    SerialPort port = new SerialPort("/dev/ttyUSB0");
     port.attach(this);
     port.open();
 

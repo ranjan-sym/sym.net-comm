@@ -42,7 +42,7 @@ public class HTTPClientTestCase implements Port.Attachment {
 
   @Test
   public void checkHTTPRequest() throws InvalidPortNameException, InterruptedException {
-    HTTPClientPort port = new HTTPClientPort(null, "www.mfd.gov.np", 80, "/mfd.gov.np/_files/0f8207ee86bf76097055c962df157415.jpg");
+    HTTPClientPort port = new HTTPClientPort("www.mfd.gov.np", 80, "/mfd.gov.np/_files/0f8207ee86bf76097055c962df157415.jpg");
     port.attach(this);
     port.open();
 
