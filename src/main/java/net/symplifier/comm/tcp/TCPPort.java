@@ -5,6 +5,7 @@ import net.symplifier.comm.InvalidPortNameException;
 import net.symplifier.comm.PortReceiver;
 import net.symplifier.comm.PortTransmitter;
 import net.symplifier.core.application.threading.ThreadTarget;
+import sun.net.ConnectionResetException;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
@@ -161,9 +162,10 @@ public class TCPPort extends DigitalPort implements ThreadTarget<TCPManager, Obj
 
     if ((interestOps & SelectionKey.OP_CONNECT) == SelectionKey.OP_CONNECT) {
       try {
-        this.socket.finishConnect();
-        getAttachment().onPortOpen(this);
-        newInterest = SelectionKey.OP_READ;
+        if (this.socket.finishConnect()) {
+          getAttachment().onPortOpen(this);
+          newInterest = SelectionKey.OP_READ;
+        }
       } catch(IOException e) {
         getAttachment().onPortError(this, e);
       }
