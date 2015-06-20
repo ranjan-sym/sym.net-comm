@@ -5,12 +5,10 @@ import net.symplifier.comm.InvalidPortNameException;
 import net.symplifier.comm.PortReceiver;
 import net.symplifier.comm.PortTransmitter;
 import net.symplifier.core.application.threading.ThreadTarget;
-import sun.net.ConnectionResetException;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
-import java.nio.BufferUnderflowException;
 import java.nio.ByteBuffer;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.SocketChannel;
