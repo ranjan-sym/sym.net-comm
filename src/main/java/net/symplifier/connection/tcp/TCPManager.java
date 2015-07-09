@@ -75,7 +75,7 @@ class TCPManager implements Runnable, ExitHandler {
       int readyChannels = 0;
       synchronized (this) {
       try {
-        System.out.println("Waiting for " + selector.keys().size() + " keys.");
+        //System.out.println("Waiting for " + selector.keys().size() + " keys.");
         readyChannels = selector.select();
       } catch (IOException e) {
         //System.err.println("Unexpected error in TCP manager");
