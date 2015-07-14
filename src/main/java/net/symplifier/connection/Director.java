@@ -17,7 +17,9 @@ class Director implements ExitHandler {
     pool = new ThreadPool<>(this);
     pool.start(10);
 
-    Application.app().addExitHandler(this);
+    if (Application.app() != null) {
+      Application.app().addExitHandler(this);
+    }
   }
 
   public static void raiseEvent(AbstractConnection connection) {
