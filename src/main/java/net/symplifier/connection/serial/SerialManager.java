@@ -42,8 +42,9 @@ class SerialManager implements Runnable, ExitHandler {
 
   @Override
   public void run() {
-    Application.app().addExitHandler(this);
-
+    if (Application.app() != null) {
+      Application.app().addExitHandler(this);
+    }
     while(!exit) {
       synchronized (outputBufferWaitingConnections) {
         int waitInterval = Integer.MAX_VALUE;
