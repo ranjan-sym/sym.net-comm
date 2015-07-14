@@ -110,7 +110,7 @@ public class SerialConnection extends AbstractConnection implements SerialPortEv
     }
 
     byte b[] = new byte[buffer.remaining()];
-    buffer.put(b);
+    buffer.get(b);
     try {
       port.writeBytes(b);
       if (port.getOutputBufferBytesCount() == 0) {
