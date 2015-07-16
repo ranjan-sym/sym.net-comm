@@ -39,7 +39,7 @@
     <dependency>
       <groupId>net.symplifier.libs</groupId>
       <artifactId>sym.net-core</artifactId>
-      <version>1.0.2-SNAPSHOT</version>
+      <version>1.0.2</version>
     </dependency>
 
 
