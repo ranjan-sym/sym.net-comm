@@ -95,6 +95,7 @@ public class TCPConnection extends AbstractConnection {
       isOpen = false;
 
       raiseCloseEvent();
+    }
       try {
         socket.close();
       } catch (IOException e) {
@@ -102,7 +103,7 @@ public class TCPConnection extends AbstractConnection {
         // if there is an error here
       }
       TCPManager.unhook(this);
-    }
+
   }
 
   @Override
@@ -126,5 +127,9 @@ public class TCPConnection extends AbstractConnection {
     } catch (IOException e) {
       raiseErrorEvent(e);
     }
+  }
+
+  public String toString() {
+    return socketAddress==null?"<TCP-Socket-null>":socketAddress.toString();
   }
 }
