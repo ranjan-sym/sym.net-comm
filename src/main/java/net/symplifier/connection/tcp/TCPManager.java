@@ -44,27 +44,41 @@ class TCPManager implements Runnable, ExitHandler {
   private void unhookImpl(SelectableChannel channel) {
     SelectionKey key = channel.keyFor(selector);
     if (key != null) {
-      selector.wakeup();
+      wakeUpSelector();
     }
   }
 
-  private synchronized void hookImpl(Object owner, SelectableChannel channel, int options) {
+  private void hookImpl(Object owner, SelectableChannel channel, int options) {
     SelectionKey key = channel.keyFor(selector);
 
     if (key != null) {
       if (key.interestOps() != options) {
         key.interestOps(options);
-        selector.wakeup();
+        synchronized (this) {
+          wakeUpSelector();
+        }
       }
     } else {
       try {
-        key = channel.register(selector, options);
-        key.attach(owner);
-        key.interestOps(options);
-        selector.wakeup();
+        synchronized (this) {
+          wakeUpSelector();
+          key = channel.register(selector, options);
+          key.attach(owner);
+          key.interestOps(options);
+        }
       } catch (ClosedChannelException e) {
         e.printStackTrace();
       }
+    }
+  }
+
+  private void wakeUpSelector() {
+    if (selector.keys().size() == 0) {
+      //System.out.println("Waking up by notification on object");
+      this.notify();
+    } else {
+      //System.out.println("Waking up by selector");
+      selector.wakeup();
     }
   }
 
@@ -74,13 +88,23 @@ class TCPManager implements Runnable, ExitHandler {
     while(!exit) {
       int readyChannels = 0;
       synchronized (this) {
-      try {
-        //System.out.println("Waiting for " + selector.keys().size() + " keys.");
-        readyChannels = selector.select();
-      } catch (IOException e) {
-        //System.err.println("Unexpected error in TCP manager");
-        e.printStackTrace();
-      }
+        try {
+          //System.out.println("Waiting for " + selector.keys().size() + " keys.");
+          if (selector.keys().size() == 0) {
+            // No keys to wait for, so waiting on the object
+            //System.out.println("No keys to wait for so waiting on the object");
+            this.wait();
+            readyChannels = 0;
+          } else {
+            //System.out.println("Waiting on the selector keys");
+            readyChannels = selector.select();
+          }
+        } catch (IOException e) {
+          //System.err.println("Unexpected error in TCP manager");
+          e.printStackTrace();
+        } catch (InterruptedException e) {
+          e.printStackTrace();
+        }
 
         //System.out.println("Ready Channels = " + readyChannels);
         if (readyChannels == 0) {
@@ -113,6 +137,7 @@ class TCPManager implements Runnable, ExitHandler {
           } catch(IOException e) {
             // Looks like out of memory, nowhere to report this error
             // TODO Report this error on log files
+            e.printStackTrace();
           }
         } else if (key.isConnectable()) {
           key.interestOps(SelectionKey.OP_READ);
