@@ -107,7 +107,5 @@ public class TCPServer implements Server<TCPConnection>, CloseHandler {
     synchronized (children) {
       children.remove(connection);
     }
-
-    closeHandler.onClose(connection);
   }
 }
