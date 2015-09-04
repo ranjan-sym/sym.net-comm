@@ -41,6 +41,7 @@ public class TCPConnection extends AbstractConnection {
   void open(SocketChannel socket) {
     this.socket = socket;
     this.isOpen = true;
+    TCPManager.hook(this, SelectionKey.OP_READ);
   }
 
   public boolean isOpen() {
