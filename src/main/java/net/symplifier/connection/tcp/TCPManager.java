@@ -89,7 +89,7 @@ class TCPManager implements Runnable, ExitHandler {
       int readyChannels = 0;
       synchronized (this) {
         try {
-          //System.out.println("Waiting for " + selector.keys().size() + " keys.");
+          System.out.println("Waiting for " + selector.keys().size() + " keys.");
           if (selector.keys().size() == 0) {
             // No keys to wait for, so waiting on the object
             //System.out.println("No keys to wait for so waiting on the object");
