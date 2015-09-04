@@ -12,13 +12,13 @@ import java.nio.charset.Charset;
  * Created by ranjan on 6/10/15.
  */
 public class HTTPClientPort extends TCPPort {
-  public HTTPClientPort(Owner owner, String name) throws InvalidPortNameException {
-    super(owner, name);
+  public HTTPClientPort(String name) throws InvalidPortNameException {
+    super(name);
     this.path = "/";
   }
 
-  public HTTPClientPort(Owner owner, String host, int port, String path) throws InvalidPortNameException {
-    super(owner, host + ":" + port);
+  public HTTPClientPort(String host, int port, String path) throws InvalidPortNameException {
+    super(host + ":" + port);
     this.path = path;
   }
 

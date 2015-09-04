@@ -9,7 +9,6 @@ import net.symplifier.core.application.threading.ThreadTarget;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
-import java.nio.BufferUnderflowException;
 import java.nio.ByteBuffer;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.SocketChannel;
@@ -30,32 +29,32 @@ public class TCPPort extends DigitalPort implements ThreadTarget<TCPManager, Obj
     return remoteHost;
   }
 
-  public TCPPort(Owner owner, String name) throws InvalidPortNameException {
-    super(owner, name);
+  public TCPPort(String name) throws InvalidPortNameException {
+    super(name);
 
     if(name.indexOf(':') > 0) {
       String parts[] = name.split(":", 2);
 
       remoteHost = parts[0].trim();
       if (remoteHost.isEmpty()) {
-        throw new InvalidPortNameException();
+        throw new InvalidPortNameException(this, name);
       }
       try {
         remotePort = Integer.parseInt(parts[1]);
         if (remotePort <=0 || remotePort > 65535) {
-          throw new InvalidPortNameException();
+          throw new InvalidPortNameException(this, name);
         }
       } catch(NumberFormatException ex) {
-        throw new InvalidPortNameException();
+        throw new InvalidPortNameException(this, name);
       }
     } else {
-      throw new InvalidPortNameException();
+      throw new InvalidPortNameException(this, name);
     }
 
   }
 
-  public TCPPort(Owner owner, String host, int port) throws InvalidPortNameException {
-    this(owner, host + ":" + port);
+  public TCPPort(String host, int port) throws InvalidPortNameException {
+    this(host + ":" + port);
   }
 
   private static String extractName(SocketChannel channel) {
@@ -67,7 +66,7 @@ public class TCPPort extends DigitalPort implements ThreadTarget<TCPManager, Obj
   }
 
   protected TCPPort(TCP server, SocketChannel socket) {
-    super(server.getOwner(), extractName(socket));
+    super(extractName(socket));
     this.socket = socket;
     try {
       this.socket.configureBlocking(false);
@@ -143,6 +142,15 @@ public class TCPPort extends DigitalPort implements ThreadTarget<TCPManager, Obj
     getAttachment().onPortClose(this);
   }
 
+  /**
+   * The worker thread for the TCPPort operation
+   *
+   * @param source The TCPManager responsible for managing all the TCP sessions
+   * @param attachment The attachment is provides the interestOps code namely
+   *                   - SelectionKey.OP_CONNECT
+   *                   - SelectionKey.OP_READ
+   *                   - SelectionKey.OP_WRITE
+   */
   @Override
   public void onRun(TCPManager source, Object attachment) {
     Integer interestOps = (Integer)attachment;
@@ -152,9 +160,10 @@ public class TCPPort extends DigitalPort implements ThreadTarget<TCPManager, Obj
 
     if ((interestOps & SelectionKey.OP_CONNECT) == SelectionKey.OP_CONNECT) {
       try {
-        this.socket.finishConnect();
-        getAttachment().onPortOpen(this);
-        newInterest = SelectionKey.OP_READ;
+        if (this.socket.finishConnect()) {
+          getAttachment().onPortOpen(this);
+          newInterest = SelectionKey.OP_READ;
+        }
       } catch(IOException e) {
         getAttachment().onPortError(this, e);
       }

@@ -5,17 +5,11 @@ package net.symplifier.comm;
  */
 public abstract class ServerPort<T extends DigitalPort> implements Port {
 
-  private final Owner owner;
   private final String name;
   private Attachment attachment;
 
-  public ServerPort(Owner owner, String name) {
-    this.owner = owner;
+  public ServerPort(String name) {
     this.name = name;
-  }
-
-  public Owner getOwner() {
-    return owner;
   }
 
   public String getName() {

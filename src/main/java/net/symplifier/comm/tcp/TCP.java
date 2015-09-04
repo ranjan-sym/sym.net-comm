@@ -1,7 +1,9 @@
 package net.symplifier.comm.tcp;
 
+import net.symplifier.comm.InvalidPortNameException;
 import net.symplifier.comm.ServerPort;
 import net.symplifier.core.application.threading.ThreadTarget;
+import org.omg.CORBA.DynAnyPackage.Invalid;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
@@ -9,39 +11,65 @@ import java.net.SocketAddress;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
 
 /**
  * Created by ranjan on 6/9/15.
  */
 public class TCP extends ServerPort implements ThreadTarget<TCPManager, Object> {
+
+  private List<TCPPort> children = new LinkedList<>();
+
   private String bindAddress;
   private int    port;
 
   ServerSocketChannel serverSocket;
   private volatile boolean exit = false;
 
-  public TCP(Owner owner, String name) {
-    super(owner, name);
+  public TCP(String name) throws InvalidPortNameException {
+    super(name);
+    validate(name.split(":"));
   }
 
-  public TCP(Owner owner, int port) {
-    super(owner, Integer.toString(port));
+
+  private void validate(String parts[]) throws InvalidPortNameException {
+    if (parts.length > 2) {
+      throw new InvalidPortNameException(this, getName());
+    }
+
+    try {
+      if (parts.length == 1) {
+        this.validate("0.0.0.0", Integer.parseInt(parts[0]));
+      } else {
+        this.validate(parts[0], Integer.parseInt(parts[1]));
+      }
+    } catch(NumberFormatException e) {
+      throw new InvalidPortNameException(this, getName());
+    }
   }
 
-  public TCP(Owner owner, String bindAddress, int port) {
-    super(owner, bindAddress + ":" + port);
+  private void validate(String bindAddress, int port) throws InvalidPortNameException {
+    if (port <=0 || port > 65535) {
+      throw new InvalidPortNameException(this, getName());
+    }
+
+    this.bindAddress = bindAddress;
+    this.port = port;
+  }
+
+  public TCP(int port) throws InvalidPortNameException {
+    this("0.0.0.0", port);
+
+  }
+
+  public TCP(String bindAddress, int port) throws InvalidPortNameException {
+    super(bindAddress + ":" + port);
+    validate(bindAddress, port);
   }
 
   public boolean start() {
-    String name = getName();
-    int p = name.indexOf(':');
-    if (p >= 0) {
-      bindAddress = name.substring(0, p);
-      port = Integer.parseInt(name.substring(p+1));
-    } else {
-      bindAddress = "0.0.0.0";
-      port = Integer.parseInt(name);
-    }
 
     SocketAddress address = new InetSocketAddress(bindAddress, port);
 
@@ -49,7 +77,6 @@ public class TCP extends ServerPort implements ThreadTarget<TCPManager, Object> 
       serverSocket = ServerSocketChannel.open();
       serverSocket.configureBlocking(false);
       serverSocket.bind(address);
-
       System.out.println("Listening on - " + address.toString());
     } catch(IOException e) {
       System.out.println("Port already used - " + address.toString());
@@ -64,7 +91,11 @@ public class TCP extends ServerPort implements ThreadTarget<TCPManager, Object> 
 
   public void stop() {
 
-    // TODO close all the child ports
+    for(TCPPort port:children) {
+      port.close();
+    }
+    children.clear();
+
     try {
       serverSocket.close();
     } catch(IOException e) {
@@ -90,6 +121,9 @@ public class TCP extends ServerPort implements ThreadTarget<TCPManager, Object> 
     // the attachment is expected to be a SocketChannel
     SocketChannel socket = (SocketChannel)attachment;
     TCPPort port = createPort(socket);
+
+    // Keep track of all the children port
+    children.add(port);
 
     // Raise event
     getAttachment().onPortOpen(port);
