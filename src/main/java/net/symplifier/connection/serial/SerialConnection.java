@@ -37,6 +37,10 @@ public class SerialConnection extends AbstractConnection implements SerialPortEv
     }
   }
 
+  public String getPort() {
+    return port.getPortName();
+  }
+
   public int getBaudRate() {
     return baudRate;
   }
